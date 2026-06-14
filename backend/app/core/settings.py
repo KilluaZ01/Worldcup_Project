@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     sports_api_key: str = Field(default="", alias="SPORTS_API_KEY")
     sports_api_league: str = Field(default="39", alias="SPORTS_API_LEAGUE")
     sports_api_season: str = Field(default="2026", alias="SPORTS_API_SEASON")
+    jwt_secret: str = Field(default="changeme", alias="JWT_SECRET")
+    jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
+    jwt_exp_seconds: int = Field(default=86400, alias="JWT_EXP_SECONDS")
 
     @property
     def cors_origins(self) -> list[str]:
