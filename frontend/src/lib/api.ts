@@ -9,6 +9,8 @@ import {
 import type { Bet, LeaderboardEntry, Match, Result, Stats } from "../types";
 
 const ROOM_STORAGE_KEY = "bet-tracker-room";
+const TOKEN_KEY = "bet-tracker-token";
+const USER_KEY = "bet-tracker-user";
 const apiBaseURL = import.meta.env.VITE_API_URL ?? "";
 
 export const api = axios.create({
@@ -17,6 +19,37 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// attach token if present
+function loadAuth() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
+loadAuth();
+
+export function setAuthToken(token: string | null) {
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+    delete api.defaults.headers.common["Authorization"];
+  }
+}
+
+export function getStoredUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+export function setStoredUser(user: any | null) {
+  if (!user) return localStorage.removeItem(USER_KEY);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
 
 function getStoredRoom(): { id: number; code: string } | null {
   try {
@@ -38,24 +71,24 @@ function setStoredRoom(room: { id: number; code: string } | null) {
   localStorage.setItem(ROOM_STORAGE_KEY, JSON.stringify(room));
 }
 
-export async function hostRoom(code: string, name?: string) {
+export async function hostRoom(code: string, hostName?: string) {
   if (!apiBaseURL) {
     const fake = { id: Math.floor(Math.random() * 100000), code };
     setStoredRoom(fake);
     return fake;
   }
-  const { data } = await api.post("/rooms/host", { code, name });
+  const { data } = await api.post("/rooms/host", { code, host_name: hostName });
   setStoredRoom({ id: data.id, code: data.code });
   return data;
 }
 
-export async function joinRoom(code: string) {
+export async function joinRoom(code: string, name?: string) {
   if (!apiBaseURL) {
     const fake = { id: Math.floor(Math.random() * 100000), code };
     setStoredRoom(fake);
     return fake;
   }
-  const { data } = await api.post("/rooms/join", { code });
+  const { data } = await api.post("/rooms/join", { code, name });
   setStoredRoom({ id: data.id, code: data.code });
   return data;
 }
@@ -64,9 +97,62 @@ export function getRoom() {
   return getStoredRoom();
 }
 
+export async function getRoomByCode(code: string) {
+  if (!apiBaseURL) {
+    // in mock mode, we can only confirm stored room
+    const stored = getStoredRoom();
+    if (stored?.code === code) return stored;
+    throw new Error("Room not found (mock)");
+  }
+  const { data } = await api.get(`/rooms/${code}`);
+  return data;
+}
+
+// auth
+export async function register(email: string, password: string) {
+  if (!apiBaseURL) throw new Error("No API");
+  const { data } = await api.post("/auth/register", { email, password });
+  return data;
+}
+
+export async function login(email: string, password: string) {
+  if (!apiBaseURL) throw new Error("No API");
+  const { data } = await api.post("/auth/login", { email, password });
+  setAuthToken(data.access_token);
+  // fetch user
+  try {
+    const user = await getCurrentUser();
+    setStoredUser(user);
+  } catch {}
+  return data;
+}
+
+export function logout() {
+  setAuthToken(null);
+  setStoredUser(null);
+}
+
+export function isLoggedIn() {
+  return !!localStorage.getItem(TOKEN_KEY);
+}
+
+export async function getCurrentUser() {
+  if (!apiBaseURL) return null;
+  const { data } = await api.get("/auth/me");
+  setStoredUser(data);
+  return data;
+}
+
+export async function getMyRooms() {
+  if (!apiBaseURL) return [];
+  const { data } = await api.get("/auth/me/rooms");
+  return data;
+}
+
 export async function fetchMatches(): Promise<Match[]> {
   const stored = getStoredRoom();
-  if (!apiBaseURL) return mockMatches.filter((match) => match.status !== "completed");
+  if (!apiBaseURL)
+    return mockMatches.filter((match) => match.status !== "completed");
   const params: Record<string, unknown> = {};
   if (stored?.id) params.room_id = stored.id;
   const { data } = await api.get<Match[]>("/matches", { params });
@@ -82,7 +168,12 @@ export async function fetchBets(): Promise<Bet[]> {
   return data;
 }
 
-export async function placeBet(payload: { match_id: number; selected_team: string; amount: number; bettor: string; }): Promise<Bet> {
+export async function placeBet(payload: {
+  match_id: number;
+  selected_team: string;
+  amount: number;
+  bettor: string;
+}): Promise<Bet> {
   const stored = getStoredRoom();
   if (!apiBaseURL) {
     const fake: Bet = {
@@ -106,7 +197,9 @@ export async function placeBet(payload: { match_id: number; selected_team: strin
   return data;
 }
 
-export async function fetchBetHistory(): Promise<{ match: Match; result?: Result; bets: Bet[] }[]> {
+export async function fetchBetHistory(): Promise<
+  { match: Match; result?: Result; bets: Bet[] }[]
+> {
   const stored = getStoredRoom();
   if (!apiBaseURL) {
     return mockMatches
@@ -132,12 +225,17 @@ export async function fetchBetHistory(): Promise<{ match: Match; result?: Result
     }));
 }
 
-export async function fetchLeaderboard(): Promise<Record<string, LeaderboardEntry>> {
+export async function fetchLeaderboard(): Promise<
+  Record<string, LeaderboardEntry>
+> {
   const stored = getStoredRoom();
   if (!apiBaseURL) return mockLeaderboard;
   const params: Record<string, unknown> = {};
   if (stored?.id) params.room_id = stored.id;
-  const { data } = await api.get<Record<string, LeaderboardEntry>>("/leaderboard", { params });
+  const { data } = await api.get<Record<string, LeaderboardEntry>>(
+    "/leaderboard",
+    { params },
+  );
   return data;
 }
 

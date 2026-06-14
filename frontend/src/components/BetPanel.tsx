@@ -29,11 +29,21 @@ export function BetPanel({ match }: { match: Match }) {
       return;
     }
 
-    const selected_team = selected === "Home" ? match.home_team : selected === "Away" ? match.away_team : "Draw";
+    const selected_team =
+      selected === "Home"
+        ? match.home_team
+        : selected === "Away"
+          ? match.away_team
+          : "Draw";
 
     try {
       setLoading(true);
-      await placeBet({ match_id: match.id, selected_team, amount: amt, bettor });
+      await placeBet({
+        match_id: match.id,
+        selected_team,
+        amount: amt,
+        bettor,
+      });
       setSuccess("Bet placed successfully");
       setAmount("");
     } catch (e: any) {
@@ -82,7 +92,7 @@ export function BetPanel({ match }: { match: Match }) {
           <button
             key={choice}
             onClick={() => setSelected(choice)}
-            className={`rounded-xl border px-4 py-3 text-left transition ${selected === choice ? 'border-blue-400 bg-white/10' : 'border-white/10 bg-white/5'} hover:bg-white/10`}
+            className={`rounded-xl border px-4 py-3 text-left transition ${selected === choice ? "border-blue-400 bg-white/10" : "border-white/10 bg-white/5"} hover:bg-white/10`}
             type="button"
           >
             <span className="block text-sm text-slate-400">{choice}</span>
@@ -90,8 +100,8 @@ export function BetPanel({ match }: { match: Match }) {
               {choice === "Home"
                 ? match.home_team
                 : choice === "Away"
-                ? match.away_team
-                : "No winner"}
+                  ? match.away_team
+                  : "No winner"}
             </span>
           </button>
         ))}
@@ -113,7 +123,9 @@ export function BetPanel({ match }: { match: Match }) {
           <span className="mb-2 block text-sm text-slate-400">Bet amount</span>
           <input
             value={amount as any}
-            onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) =>
+              setAmount(e.target.value === "" ? "" : Number(e.target.value))
+            }
             className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none ring-0 placeholder:text-slate-500 focus:border-blue-500"
             placeholder="Enter amount"
             type="number"
@@ -127,13 +139,15 @@ export function BetPanel({ match }: { match: Match }) {
             className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:opacity-60"
             type="button"
           >
-            {loading ? 'Placing...' : 'Place bet'}
+            {loading ? "Placing..." : "Place bet"}
           </button>
         </div>
       </div>
 
       {error ? <p className="mt-4 text-sm text-red-400">{error}</p> : null}
-      {success ? <p className="mt-4 text-sm text-green-400">{success}</p> : null}
+      {success ? (
+        <p className="mt-4 text-sm text-green-400">{success}</p>
+      ) : null}
 
       <p className="mt-4 text-sm text-slate-400">
         Bettors are color-coded automatically so each participant is easy to
