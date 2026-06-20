@@ -3,8 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.rooms import get_room_or_default
 from app.models.all import Bet, Match
-from app.routers.matches import get_room_or_default
 from app.schemas.bet import BetCreate, BetRead
 
 router = APIRouter(prefix="/bets", tags=["bets"])
@@ -13,9 +13,8 @@ router = APIRouter(prefix="/bets", tags=["bets"])
 @router.post("", response_model=BetRead, status_code=201)
 def place_bet(payload: BetCreate, db: Session = Depends(get_db)) -> Bet:
     room = get_room_or_default(db, payload.room_id)
-    match = db.execute(
-        select(Match).where(Match.id == payload.match_id, Match.room_id == room.id)
-    ).scalar_one_or_none()
+
+    match = db.get(Match, payload.match_id)
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
 
@@ -33,20 +32,30 @@ def place_bet(payload: BetCreate, db: Session = Depends(get_db)) -> Bet:
 
 
 @router.get("", response_model=list[BetRead])
-def get_bets(room_id: int | None = Query(default=None), db: Session = Depends(get_db)) -> list[Bet]:
+def get_bets(
+    room_id: int | None = Query(default=None), db: Session = Depends(get_db)
+) -> list[Bet]:
     room = get_room_or_default(db, room_id)
-    bets = db.execute(select(Bet).where(Bet.room_id == room.id).order_by(Bet.created_at.desc())).scalars().all()
+    bets = (
+        db.execute(
+            select(Bet).where(Bet.room_id == room.id).order_by(Bet.created_at.desc())
+        )
+        .scalars()
+        .all()
+    )
     return bets
 
 
 @router.get("/history", response_model=list[BetRead])
-def get_bet_history(room_id: int | None = Query(default=None), db: Session = Depends(get_db)) -> list[Bet]:
+def get_bet_history(
+    room_id: int | None = Query(default=None), db: Session = Depends(get_db)
+) -> list[Bet]:
     room = get_room_or_default(db, room_id)
     bets = (
         db.execute(
             select(Bet)
             .join(Match, Bet.match_id == Match.id)
-            .where(Bet.room_id == room.id, Match.status == "completed")
+            .where(Bet.room_id == room.id, Match.status == "finished")
             .order_by(Bet.created_at.desc())
         )
         .scalars()

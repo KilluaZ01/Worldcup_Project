@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.routers.matches import get_room_or_default
+from app.core.rooms import get_room_or_default
 from app.services.stats import calculate_stats
 
 router = APIRouter(prefix="/stats", tags=["stats"])

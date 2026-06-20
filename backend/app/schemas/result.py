@@ -7,7 +7,6 @@ class ResultBase(BaseModel):
     match_id: int
     winning_team: str
     processed: bool = True
-    room_id: int | None = None
 
 
 class ResultCreate(ResultBase):

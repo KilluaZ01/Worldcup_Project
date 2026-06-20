@@ -22,7 +22,6 @@ class Room(Base):
         DateTime(timezone=True), default=datetime.utcnow, nullable=False
     )
 
-    matches = relationship("Match", back_populates="room", cascade="all, delete-orphan")
     participants = relationship(
         "Participant", back_populates="room", cascade="all, delete-orphan"
     )

@@ -8,61 +8,62 @@ from app.services.leaderboard import calculate_leaderboard
 
 
 def calculate_stats(db: Session, room_id: int) -> dict:
-    matches = db.execute(select(Match).where(Match.room_id == room_id)).scalars().all()
     bets = db.execute(select(Bet).where(Bet.room_id == room_id)).scalars().all()
+
+    match_ids = {bet.match_id for bet in bets}
+    matches = []
+    if match_ids:
+        matches = (
+            db.execute(select(Match).where(Match.id.in_(match_ids))).scalars().all()
+        )
+
     leaderboard = calculate_leaderboard(db, room_id)
 
     team_counter = Counter(bet.selected_team for bet in bets)
     most_selected_team = team_counter.most_common(1)[0][0] if team_counter else ""
 
+    finished_matches = sorted(
+        (m for m in matches if m.status == "finished"),
+        key=lambda item: item.start_time,
+    )
+
+    # Longest win streak per bettor, and biggest single winning bet
     streaks = defaultdict(int)
     best_streak = 0
-    for match in sorted(
-        (m for m in matches if m.status == "completed"),
-        key=lambda item: item.start_time,
-    ):
+    single_biggest_win_bettor = ""
+    single_biggest_win_value = 0.0
+
+    for match in finished_matches:
         winner = match.result.winning_team if match.result else match.winner
         if not winner:
             continue
-        for bet in match.bets:
+
+        relevant_bets = [b for b in bets if b.match_id == match.id]
+        winning_bets = [b for b in relevant_bets if b.selected_team == winner]
+
+        for bet in relevant_bets:
             if bet.selected_team == winner:
                 streaks[bet.bettor] += 1
                 best_streak = max(best_streak, streaks[bet.bettor])
             else:
                 streaks[bet.bettor] = 0
 
-    biggest_win_bettor = ""
-    biggest_win_value = 0.0
-    for match in sorted(
-        (m for m in matches if m.status == "completed"),
-        key=lambda item: item.start_time,
-    ):
-        winner = match.result.winning_team if match.result else match.winner
-        if not winner:
-            continue
-        winning_bets = [bet for bet in match.bets if bet.selected_team == winner]
-        if not winning_bets:
-            continue
-        match_biggest_bet = max(winning_bets, key=lambda bet: float(bet.amount))
-        if float(match_biggest_bet.amount) > biggest_win_value:
-            biggest_win_value = float(match_biggest_bet.amount)
-            biggest_win_bettor = match_biggest_bet.bettor
+        if winning_bets:
+            match_biggest_bet = max(winning_bets, key=lambda b: float(b.amount))
+            if float(match_biggest_bet.amount) > single_biggest_win_value:
+                single_biggest_win_value = float(match_biggest_bet.amount)
+                single_biggest_win_bettor = match_biggest_bet.bettor
 
     highest_profit_bettor = ""
     highest_profit_value = 0.0
-    biggest_win_bettor = ""
-    biggest_win_value = 0.0
     betting_accuracy = 0.0
 
     if leaderboard:
         highest_profit_bettor, highest_profit_entry = max(
             leaderboard.items(), key=lambda item: item[1]["profit"]
         )
-        biggest_win_bettor, biggest_win_entry = max(
-            leaderboard.items(), key=lambda item: item[1]["wins"]
-        )
         highest_profit_value = highest_profit_entry["profit"]
-        biggest_win_value = max(highest_win_entry["profit"], 0.0)
+
         total_predictions = sum(
             entry["wins"] + entry["losses"] for entry in leaderboard.values()
         )
@@ -84,7 +85,7 @@ def calculate_stats(db: Session, room_id: int) -> dict:
         },
         "bettingAccuracy": betting_accuracy,
         "biggestWin": {
-            "bettor": biggest_win_bettor,
-            "value": round(biggest_win_value, 2),
+            "bettor": single_biggest_win_bettor,
+            "value": round(single_biggest_win_value, 2),
         },
     }

@@ -29,8 +29,10 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     # bcrypt limits passwords to 72 bytes. Validate to avoid ValueError in passlib.
-    if len(payload.password.encode('utf-8')) > 72:
-        raise HTTPException(status_code=400, detail="Password too long; must be at most 72 bytes")
+    if len(payload.password.encode("utf-8")) > 72:
+        raise HTTPException(
+            status_code=400, detail="Password too long; must be at most 72 bytes"
+        )
     pw_hash = pwd_context.hash(payload.password)
     user = User(email=payload.email, password_hash=pw_hash)
     db.add(user)
@@ -42,8 +44,10 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 def login(payload: UserCreate, db: Session = Depends(get_db)):
     # protect against too-long passwords causing bcrypt error
-    if len(payload.password.encode('utf-8')) > 72:
-        raise HTTPException(status_code=400, detail="Password too long; must be at most 72 bytes")
+    if len(payload.password.encode("utf-8")) > 72:
+        raise HTTPException(
+            status_code=400, detail="Password too long; must be at most 72 bytes"
+        )
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not pwd_context.verify(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
