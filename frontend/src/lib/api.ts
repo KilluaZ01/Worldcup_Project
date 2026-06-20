@@ -150,12 +150,9 @@ export async function getMyRooms() {
 }
 
 export async function fetchMatches(): Promise<Match[]> {
-  const stored = getStoredRoom();
   if (!apiBaseURL)
-    return mockMatches.filter((match) => match.status !== "completed");
-  const params: Record<string, unknown> = {};
-  if (stored?.id) params.room_id = stored.id;
-  const { data } = await api.get<Match[]>("/matches", { params });
+    return mockMatches.filter((match) => match.status !== "finished");
+  const { data } = await api.get<Match[]>("/matches");
   return data;
 }
 
@@ -203,7 +200,7 @@ export async function fetchBetHistory(): Promise<
   const stored = getStoredRoom();
   if (!apiBaseURL) {
     return mockMatches
-      .filter((match) => match.status === "completed")
+      .filter((match) => match.status === "finished")
       .map((match) => ({
         match,
         result: mockResults.find((result) => result.match_id === match.id),
@@ -218,7 +215,7 @@ export async function fetchBetHistory(): Promise<
     api.get<Bet[]>("/bets/history", { params }),
   ]);
   return matchesResponse.data
-    .filter((match) => match.status === "completed")
+    .filter((match) => match.status === "finished")
     .map((match) => ({
       match,
       bets: betsResponse.data.filter((bet) => bet.match_id === match.id),

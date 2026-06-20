@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { getTeamFlag } from "../lib/teamFlags";
 import type { Match } from "../types";
 import { placeBet } from "../lib/api";

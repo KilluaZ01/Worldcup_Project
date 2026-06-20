@@ -43,15 +43,9 @@ export function RoomDashboardPage() {
               </p>
             </div>
             <div className="rounded-2xl bg-white/5 p-4">
-              <p className="text-sm text-slate-400">Live</p>
+              <p className="text-sm text-slate-400">Finished</p>
               <p className="mt-1 text-2xl font-semibold">
-                {matches.filter((match) => match.status === "live").length}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-white/5 p-4">
-              <p className="text-sm text-slate-400">Completed</p>
-              <p className="mt-1 text-2xl font-semibold">
-                {matches.filter((match) => match.status === "completed").length}
+                {matches.filter((match) => match.status === "finished").length}
               </p>
             </div>
           </div>

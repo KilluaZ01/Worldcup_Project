@@ -13,6 +13,7 @@ export function Layout() {
   const { roomId = "" } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const roomBase = `/room/${roomId}`;
+  const home = `/dashboard`;
 
   function leaveRoom() {
     localStorage.removeItem(ROOM_STORAGE_KEY);
@@ -23,15 +24,17 @@ export function Layout() {
     <div className="min-h-screen text-slate-50">
       <header className="border-b border-white/10 bg-slate-950/60 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
-              Private tracker
-            </p>
-            <h1 className="text-xl font-semibold">Bet Tracker</h1>
-            <p className="mt-1 text-xs text-slate-400">
-              Room: {roomId.toUpperCase()}
-            </p>
-          </div>
+          <NavLink to={home}>
+            <div className="cursor-pointer">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                Private tracker
+              </p>
+              <h1 className="text-xl font-semibold ">Bet Tracker</h1>
+              <p className="mt-1 text-xs text-slate-400">
+                Room: {roomId.toUpperCase()}
+              </p>
+            </div>
+          </NavLink>
           <div className="flex items-center gap-3">
             <nav className="flex gap-2 rounded-full bg-white/5 p-1">
               {links.map((link) => (

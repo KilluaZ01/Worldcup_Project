@@ -1,5 +1,5 @@
 export type Bettor = string;
-export type MatchStatus = "scheduled" | "live" | "completed";
+export type MatchStatus = "scheduled" | "finished";
 
 export interface Match {
   id: number;
@@ -9,6 +9,8 @@ export interface Match {
   venue: string;
   start_time: string;
   status: MatchStatus;
+  home_score?: number | null;
+  away_score?: number | null;
   winner?: string | null;
 }
 

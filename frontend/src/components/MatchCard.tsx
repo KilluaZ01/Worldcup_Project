@@ -14,6 +14,7 @@ function formatDateTime(value: string) {
 export function MatchCard({ match }: { match: Match }) {
   const homeFlag = getTeamFlag(match.home_team);
   const awayFlag = getTeamFlag(match.away_team);
+  const isFinished = match.status === "finished";
 
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-800/80 p-5 shadow-glow">
@@ -30,6 +31,11 @@ export function MatchCard({ match }: { match: Match }) {
                 />
               ) : null}
               {match.home_team}
+              {isFinished && match.home_score != null ? (
+                <span className="ml-1 font-bold text-slate-100">
+                  {match.home_score}
+                </span>
+              ) : null}
             </span>
             <span className="text-slate-500">vs</span>
             <span className="inline-flex items-center gap-2">
@@ -41,17 +47,20 @@ export function MatchCard({ match }: { match: Match }) {
                 />
               ) : null}
               {match.away_team}
+              {isFinished && match.away_score != null ? (
+                <span className="ml-1 font-bold text-slate-100">
+                  {match.away_score}
+                </span>
+              ) : null}
             </span>
           </h3>
         </div>
         <span
           className={[
             "rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide",
-            match.status === "live"
-              ? "bg-emerald-500/15 text-emerald-300"
-              : match.status === "completed"
-                ? "bg-slate-500/15 text-slate-300"
-                : "bg-blue-500/15 text-blue-300",
+            isFinished
+              ? "bg-slate-500/15 text-slate-300"
+              : "bg-blue-500/15 text-blue-300",
           ].join(" ")}
         >
           {match.status}
@@ -69,6 +78,14 @@ export function MatchCard({ match }: { match: Match }) {
           <span>Venue</span>
           <span className="text-slate-100">{match.venue}</span>
         </div>
+        {isFinished && match.winner ? (
+          <div className="flex items-center justify-between">
+            <span>Result</span>
+            <span className="text-emerald-300 font-medium">
+              {match.winner === "Draw" ? "Draw" : `${match.winner} won`}
+            </span>
+          </div>
+        ) : null}
       </div>
     </article>
   );

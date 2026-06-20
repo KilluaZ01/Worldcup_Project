@@ -131,11 +131,13 @@ export function DashboardPage() {
                         <h3 className="text-lg font-semibold text-white">
                           {room.code}
                         </h3>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          room.locked
-                            ? "bg-red-500/20 text-red-300"
-                            : "bg-green-500/20 text-green-300"
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            room.locked
+                              ? "bg-red-500/20 text-red-300"
+                              : "bg-green-500/20 text-green-300"
+                          }`}
+                        >
                           {room.locked ? "Full" : "Open"}
                         </span>
                       </div>
@@ -159,5 +161,3 @@ export function DashboardPage() {
     </div>
   );
 }
-
-
