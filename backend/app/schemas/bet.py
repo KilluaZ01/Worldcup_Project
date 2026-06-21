@@ -20,3 +20,15 @@ class BetRead(BetBase):
 
     id: int
     created_at: datetime
+
+
+class PlaceBetRequest(BaseModel):
+    match_id: int
+    selected_team: str
+    amount: float = 50
+    room_id: int
+
+
+class PlaceBetResponse(BaseModel):
+    your_bet: BetRead
+    opponent_bet: BetRead

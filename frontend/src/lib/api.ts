@@ -6,7 +6,15 @@ import {
   mockResults,
   mockStats,
 } from "../data/mockData";
-import type { Bet, LeaderboardEntry, Match, Result, Stats } from "../types";
+
+import type {
+  Bet,
+  LeaderboardEntry,
+  Match,
+  Result,
+  Stats,
+  StoredUser,
+} from "../types";
 
 const ROOM_STORAGE_KEY = "bet-tracker-room";
 const TOKEN_KEY = "bet-tracker-token";
@@ -37,15 +45,16 @@ export function setAuthToken(token: string | null) {
   }
 }
 
-export function getStoredUser() {
+export function getStoredUser(): StoredUser | null {
   try {
     const raw = localStorage.getItem(USER_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    return JSON.parse(raw) as StoredUser;
   } catch {
     return null;
   }
 }
+
 export function setStoredUser(user: any | null) {
   if (!user) return localStorage.removeItem(USER_KEY);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -169,28 +178,12 @@ export async function placeBet(payload: {
   match_id: number;
   selected_team: string;
   amount: number;
-  bettor: string;
-}): Promise<Bet> {
-  const stored = getStoredRoom();
-  if (!apiBaseURL) {
-    const fake: Bet = {
-      id: Math.floor(Math.random() * 100000),
-      match_id: payload.match_id,
-      selected_team: payload.selected_team,
-      amount: payload.amount,
-      bettor: payload.bettor,
-      created_at: new Date().toISOString(),
-      room_id: stored?.id ?? 0,
-    } as Bet;
-    // Optionally push to mockBets so UI can read it when using mock data
-    try {
-      mockBets.unshift(fake);
-    } catch {}
-    return fake;
-  }
-  const body: any = { ...payload };
-  if (stored?.id) body.room_id = stored.id;
-  const { data } = await api.post<Bet>("/bets", body);
+  room_id: number;
+}): Promise<{ your_bet: Bet; opponent_bet: Bet }> {
+  const { data } = await api.post<{ your_bet: Bet; opponent_bet: Bet }>(
+    "/bets",
+    payload,
+  );
   return data;
 }
 

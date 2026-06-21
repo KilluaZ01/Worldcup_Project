@@ -48,3 +48,10 @@ export interface Stats {
   bettingAccuracy: number;
   biggestWin: { bettor: Bettor; value: number };
 }
+
+export interface StoredUser {
+  id: number;
+  email: string;
+  display_name?: string | null;
+  created_at: string;
+}

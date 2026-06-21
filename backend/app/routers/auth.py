@@ -28,13 +28,15 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    # bcrypt limits passwords to 72 bytes. Validate to avoid ValueError in passlib.
     if len(payload.password.encode("utf-8")) > 72:
         raise HTTPException(
             status_code=400, detail="Password too long; must be at most 72 bytes"
         )
     pw_hash = pwd_context.hash(payload.password)
-    user = User(email=payload.email, password_hash=pw_hash)
+    default_display_name = payload.email.split("@")[0]
+    user = User(
+        email=payload.email, password_hash=pw_hash, display_name=default_display_name
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -170,7 +172,7 @@ def join_room_for_user(
     if room.occupants >= (room.capacity or 2):
         room.locked = True
 
-    display_name = payload.name if getattr(payload, "name", None) else user.email
+    display_name = payload.name if getattr(payload, "name", None) else user.display_name
     participant = Participant(
         room_id=room.id, user_id=user.id, name=display_name, active=True
     )

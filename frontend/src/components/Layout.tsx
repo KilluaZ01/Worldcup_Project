@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 
 const links = [
   { to: "", label: "Dashboard" },
+  { to: "/bet-feed", label: "Place Bets" },
   { to: "/history", label: "History" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/stats", label: "Statistics" },

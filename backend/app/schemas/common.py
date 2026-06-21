@@ -42,6 +42,7 @@ class UserCreate(BaseModel):
 class UserRead(ORMModel):
     id: int
     email: str
+    display_name: str | None = None
     created_at: datetime
 
 

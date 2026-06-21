@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { RoomDashboardPage } from "./pages/RoomDashboardPage";
+import { BetFeedPage } from "./pages/BetFeedPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { RoomEntryPage } from "./pages/RoomEntryPage";
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/rooms-entry" element={<RoomEntryPage />} />
       <Route path="/room/:roomId" element={<Layout />}>
         <Route index element={<RoomDashboardPage />} />
+        <Route path="bet-feed" element={<BetFeedPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="stats" element={<StatsPage />} />

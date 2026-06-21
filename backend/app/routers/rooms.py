@@ -28,8 +28,11 @@ def host_room(
     db.refresh(room)
 
     # create host participant, link to user if present
+    # in host_room:
     display_name = (
-        payload.host_name if payload.host_name else (user.email if user else "Host")
+        payload.host_name
+        if payload.host_name
+        else (user.display_name if user else "Host")
     )
     participant = Participant(
         room_id=room.id,
@@ -119,7 +122,7 @@ def join_room(
             )
         ).scalar_one_or_none()
         if participant is None:
-            display_name = payload.name if payload.name else user.email
+            display_name = payload.name if payload.name else user.display_name
             participant = Participant(
                 room_id=room.id, name=display_name, active=True, user_id=user.id
             )
