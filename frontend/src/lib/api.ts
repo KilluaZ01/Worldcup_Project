@@ -247,3 +247,17 @@ export async function updateDisplayName(
   setStoredUser(data);
   return data;
 }
+
+export async function leaveRoomByCode(code: string) {
+  const { data } = await api.post("/auth/me/rooms/leave", { code });
+  return data;
+}
+
+export async function deleteRoom(roomId: number) {
+  await api.delete(`/rooms/${roomId}`);
+}
+
+export async function renameRoom(roomId: number, name: string) {
+  const { data } = await api.patch(`/rooms/${roomId}`, { name });
+  return data;
+}

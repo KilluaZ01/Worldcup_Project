@@ -55,3 +55,23 @@ export interface StoredUser {
   display_name?: string | null;
   created_at: string;
 }
+
+export interface Participant {
+  id: number;
+  user_id?: number | null;
+  name: string;
+  active: boolean;
+  joined_at: string;
+}
+
+export interface Room {
+  id: number;
+  code: string;
+  name?: string | null;
+  capacity: number;
+  occupants: number;
+  locked: boolean;
+  created_at: string;
+  is_host?: boolean | null;
+  participants?: Participant[] | null;
+}
