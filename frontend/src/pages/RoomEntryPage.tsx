@@ -15,12 +15,10 @@ export function RoomEntryPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"host" | "join">("host");
   const [roomInput, setRoomInput] = useState("");
-  const [nameInput, setNameInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // require auth before entering room flow
     const apiBase = import.meta.env.VITE_API_URL ?? "";
     const logged = apiBase ? !!localStorage.getItem("bet-tracker-token") : true;
     if (!logged) {
@@ -31,13 +29,11 @@ export function RoomEntryPage() {
     const stored = apiGetRoom();
     if (stored && stored.code) {
       if (apiBase) {
-        // verify room exists on server before auto-navigating
         (async () => {
           try {
             await getRoomByCode(stored.code);
             navigate(`/room/${stored.code}`, { replace: true });
           } catch (e) {
-            // stored room not valid on server; clear it
             localStorage.removeItem("bet-tracker-room");
           }
         })();
@@ -49,16 +45,15 @@ export function RoomEntryPage() {
 
   async function hostRoom() {
     setLoading(true);
+    setError(null);
     try {
       const code = generateRoomCode();
-      const room = await apiHostRoom(code, nameInput || undefined);
+      const room = await apiHostRoom(code);
       navigate(`/room/${room.code}`);
     } catch (err: any) {
-      // if server responded with an error, show it
       if (err?.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {
-        // network error — only allow client-only fallback when no API is configured
         const apiBase = import.meta.env.VITE_API_URL ?? "";
         if (!apiBase) {
           const code = generateRoomCode();
@@ -76,18 +71,19 @@ export function RoomEntryPage() {
 
   async function joinRoom() {
     const roomId = roomInput.trim().toUpperCase();
-    if (!roomId) return;
+    if (!roomId) {
+      setError("Enter a room code");
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
-      setError(null);
-      const room = await apiJoinRoom(roomId, nameInput || undefined);
+      const room = await apiJoinRoom(roomId);
       navigate(`/room/${room.code}`);
     } catch (err: any) {
-      // if server responded with an error, show it and do not navigate
       if (err?.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {
-        // network error — only allow client-only fallback when no API configured
         const apiBase = import.meta.env.VITE_API_URL ?? "";
         if (!apiBase) {
           navigate(`/room/${roomId}`);
@@ -133,23 +129,12 @@ export function RoomEntryPage() {
         </div>
 
         {mode === "host" ? (
-          <div>
-            <label className="block mt-4">
-              <span className="mb-2 block text-sm text-slate-400">
-                Your name
-              </span>
-              <input
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
-                placeholder="Enter your name"
-              />
-            </label>
+          <div className="mt-6">
             <button
               type="button"
               onClick={hostRoom}
               disabled={loading}
-              className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:opacity-60"
+              className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:opacity-60"
             >
               {loading ? "Creating..." : "Create room"}
             </button>
@@ -159,17 +144,6 @@ export function RoomEntryPage() {
           </div>
         ) : (
           <div className="mt-6 space-y-3">
-            <label className="block">
-              <span className="mb-2 block text-sm text-slate-400">
-                Your name
-              </span>
-              <input
-                value={nameInput}
-                onChange={(event) => setNameInput(event.target.value)}
-                placeholder="Enter your name"
-                className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
-              />
-            </label>
             <input
               value={roomInput}
               onChange={(event) => setRoomInput(event.target.value)}

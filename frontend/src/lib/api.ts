@@ -80,24 +80,24 @@ function setStoredRoom(room: { id: number; code: string } | null) {
   localStorage.setItem(ROOM_STORAGE_KEY, JSON.stringify(room));
 }
 
-export async function hostRoom(code: string, hostName?: string) {
+export async function hostRoom(code: string) {
   if (!apiBaseURL) {
     const fake = { id: Math.floor(Math.random() * 100000), code };
     setStoredRoom(fake);
     return fake;
   }
-  const { data } = await api.post("/rooms/host", { code, host_name: hostName });
+  const { data } = await api.post("/rooms/host", { code });
   setStoredRoom({ id: data.id, code: data.code });
   return data;
 }
 
-export async function joinRoom(code: string, name?: string) {
+export async function joinRoom(code: string) {
   if (!apiBaseURL) {
     const fake = { id: Math.floor(Math.random() * 100000), code };
     setStoredRoom(fake);
     return fake;
   }
-  const { data } = await api.post("/rooms/join", { code, name });
+  const { data } = await api.post("/rooms/join", { code });
   setStoredRoom({ id: data.id, code: data.code });
   return data;
 }
@@ -235,5 +235,15 @@ export async function fetchStats(): Promise<Stats> {
   const params: Record<string, unknown> = {};
   if (stored?.id) params.room_id = stored.id;
   const { data } = await api.get<Stats>("/stats", { params });
+  return data;
+}
+
+export async function updateDisplayName(
+  displayName: string,
+): Promise<StoredUser> {
+  const { data } = await api.patch<StoredUser>("/auth/me", {
+    display_name: displayName,
+  });
+  setStoredUser(data);
   return data;
 }

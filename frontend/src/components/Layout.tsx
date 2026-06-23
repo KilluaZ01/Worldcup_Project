@@ -1,5 +1,6 @@
-import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
+import { NavLink, Outlet, useParams } from "react-router-dom";
 import { FaRegCopy } from "react-icons/fa";
+import { UserMenu } from "./UserMenu";
 
 const links = [
   { to: "", label: "Dashboard" },
@@ -9,18 +10,10 @@ const links = [
   { to: "/stats", label: "Statistics" },
 ];
 
-const ROOM_STORAGE_KEY = "bet-tracker-room";
-
 export function Layout() {
   const { roomId = "" } = useParams<{ roomId: string }>();
-  const navigate = useNavigate();
   const roomBase = `/room/${roomId}`;
   const home = `/dashboard`;
-
-  function leaveRoom() {
-    localStorage.removeItem(ROOM_STORAGE_KEY);
-    navigate("/");
-  }
 
   return (
     <div className="min-h-screen text-slate-50">
@@ -64,13 +57,7 @@ export function Layout() {
                 </NavLink>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={leaveRoom}
-              className="rounded-full border border-white/15 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
-            >
-              Leave room
-            </button>
+            <UserMenu />
           </div>
         </div>
       </header>

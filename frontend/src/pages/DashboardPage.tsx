@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyRooms, logout, getStoredUser } from "../lib/api";
+import { getMyRooms, getStoredUser } from "../lib/api";
+import { UserMenu } from "../components/UserMenu";
 
 interface Room {
   id: number;
@@ -18,17 +19,21 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const user = getStoredUser();
 
+  async function loadRooms() {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getMyRooms();
+      setRooms(data || []);
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to load rooms");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await getMyRooms();
-        setRooms(data || []);
-      } catch (err: any) {
-        setError(err?.message ?? "Failed to load rooms");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    void loadRooms();
   }, []);
 
   function handleJoinRoom(roomCode: string) {
@@ -39,70 +44,48 @@ export function DashboardPage() {
     navigate("/rooms-entry");
   }
 
-  function handleLogout() {
-    logout();
-    navigate("/");
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Bet Tracker</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Welcome, {user?.email || "User"}
-          </p>
+    <div className="min-h-screen text-slate-50">
+      <header className="border-b border-white/10 bg-slate-950/60 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+              Private tracker
+            </p>
+            <h1 className="text-xl font-semibold">Bet Tracker</h1>
+            <p className="mt-1 text-xs text-slate-400">
+              Welcome, {user?.display_name ?? user?.email ?? "User"}
+            </p>
+          </div>
+          <UserMenu />
         </div>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 rounded-lg bg-red-600/20 border border-red-500 text-red-400 hover:bg-red-600/30 transition-all"
-        >
-          Logout
-        </button>
-      </div>
+      </header>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto">
-        {/* Create New Room Button */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-8">
           <button
             onClick={handleCreateRoom}
-            className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold transition-all shadow-lg hover:shadow-blue-500/50"
+            className="w-full rounded-2xl border border-white/10 bg-blue-600 px-6 py-4 font-semibold text-white shadow-glow transition hover:bg-blue-500"
           >
             + Create or Join Room
           </button>
         </div>
 
-        {/* Rooms List */}
         <div>
-          <h2 className="text-xl font-semibold text-white mb-4">Your Rooms</h2>
+          <h2 className="mb-4 text-xl font-semibold">Your Rooms</h2>
 
           {loading && (
-            <div className="text-center text-slate-400 py-12">
+            <div className="rounded-2xl border border-white/10 bg-slate-800/70 py-12 text-center text-slate-400">
               Loading rooms...
             </div>
           )}
 
           {error && (
-            <div className="text-center text-red-400 py-12">
+            <div className="rounded-2xl border border-white/10 bg-slate-800/70 py-12 text-center text-red-400">
               <p>{error}</p>
               <button
-                onClick={() => {
-                  setLoading(true);
-                  setError(null);
-                  (async () => {
-                    try {
-                      const data = await getMyRooms();
-                      setRooms(data || []);
-                    } catch (err: any) {
-                      setError(err?.message ?? "Failed to load rooms");
-                    } finally {
-                      setLoading(false);
-                    }
-                  })();
-                }}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={() => void loadRooms()}
+                className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-500"
               >
                 Retry
               </button>
@@ -110,9 +93,9 @@ export function DashboardPage() {
           )}
 
           {!loading && !error && rooms.length === 0 && (
-            <div className="text-center text-slate-400 py-12 border border-slate-700 rounded-xl bg-slate-800/50">
+            <div className="rounded-2xl border border-white/10 bg-slate-800/70 py-12 text-center text-slate-400">
               <p>No rooms yet</p>
-              <p className="text-sm mt-2">
+              <p className="mt-2 text-sm">
                 Click "Create or Join Room" to get started!
               </p>
             </div>
@@ -123,31 +106,29 @@ export function DashboardPage() {
               {rooms.map((room) => (
                 <div
                   key={room.id}
-                  className="p-4 rounded-xl bg-slate-800 border border-slate-700 hover:border-slate-600 transition-all"
+                  className="rounded-2xl border border-white/10 bg-slate-800/70 p-4 shadow-glow transition hover:border-white/20"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-white">
-                          {room.code}
-                        </h3>
+                        <h3 className="text-lg font-semibold">{room.code}</h3>
                         <span
-                          className={`px-2 py-1 text-xs rounded-full ${
+                          className={`rounded-full px-2 py-1 text-xs ${
                             room.locked
-                              ? "bg-red-500/20 text-red-300"
-                              : "bg-green-500/20 text-green-300"
+                              ? "bg-red-500/15 text-red-300"
+                              : "bg-emerald-500/15 text-emerald-300"
                           }`}
                         >
                           {room.locked ? "Full" : "Open"}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-400 mt-1">
+                      <p className="mt-1 text-sm text-slate-400">
                         {room.occupants} / {room.capacity} members
                       </p>
                     </div>
                     <button
                       onClick={() => handleJoinRoom(room.code)}
-                      className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all"
+                      className="rounded-xl bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-500"
                     >
                       Enter
                     </button>
@@ -157,7 +138,7 @@ export function DashboardPage() {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
