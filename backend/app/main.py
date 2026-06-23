@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routers.auth import router as auth_router
 from app.core.database import Base, engine, SessionLocal
 from app.core.settings import get_settings
 from app.models import all as _models  # noqa: F401
@@ -76,10 +77,6 @@ app.include_router(bets_router)
 app.include_router(results_router)
 app.include_router(leaderboard_router)
 app.include_router(stats_router)
-
-# auth router
-from app.routers.auth import router as auth_router
-
 app.include_router(auth_router)
 
 

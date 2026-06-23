@@ -9,6 +9,7 @@ class BetBase(BaseModel):
     selected_team: str
     amount: float
     room_id: int | None = None
+    is_initiator: bool = False
 
 
 class BetCreate(BetBase):

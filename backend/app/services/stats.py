@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.all import Bet, Match
-from app.services.leaderboard import calculate_leaderboard
+from app.services.leaderboard import calculate_leaderboard, bet_wins
 
 
 def calculate_stats(db: Session, room_id: int) -> dict:
@@ -27,22 +27,19 @@ def calculate_stats(db: Session, room_id: int) -> dict:
         key=lambda item: item.start_time,
     )
 
-    # Longest win streak per bettor, and biggest single winning bet
+    matches_by_id = {m.id: m for m in finished_matches}
+
     streaks = defaultdict(int)
     best_streak = 0
     single_biggest_win_bettor = ""
     single_biggest_win_value = 0.0
 
     for match in finished_matches:
-        winner = match.result.winning_team if match.result else match.winner
-        if not winner:
-            continue
-
         relevant_bets = [b for b in bets if b.match_id == match.id]
-        winning_bets = [b for b in relevant_bets if b.selected_team == winner]
+        winning_bets = [b for b in relevant_bets if bet_wins(b, match)]
 
         for bet in relevant_bets:
-            if bet.selected_team == winner:
+            if bet_wins(bet, match):
                 streaks[bet.bettor] += 1
                 best_streak = max(best_streak, streaks[bet.bettor])
             else:

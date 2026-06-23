@@ -6,6 +6,15 @@ from sqlalchemy.orm import Session
 from app.models.all import Bet, Match
 
 
+def bet_wins(bet: Bet, match: Match) -> bool:
+    winning_team = match.result.winning_team if match.result else match.winner
+    if not winning_team:
+        return False
+    if winning_team == "Draw":
+        return not bet.is_initiator  # auto-assigned person wins draws
+    return bet.selected_team == winning_team
+
+
 def calculate_leaderboard(db: Session, room_id: int) -> dict[str, dict[str, float]]:
     bets_in_room = db.execute(select(Bet).where(Bet.room_id == room_id)).scalars().all()
 
@@ -31,11 +40,7 @@ def calculate_leaderboard(db: Session, room_id: int) -> dict[str, dict[str, floa
         if match is None:
             continue  # match not finished yet, skip
 
-        winning_team = match.result.winning_team if match.result else match.winner
-        if not winning_team:
-            continue
-
-        if bet.selected_team == winning_team:
+        if bet_wins(bet, match):
             wins[bet.bettor] += 1
             profit[bet.bettor] += float(bet.amount)
             balances[bet.bettor] += float(bet.amount)

@@ -75,6 +75,7 @@ def place_bet(
         bettor=me.name,
         selected_team=payload.selected_team,
         amount=payload.amount,
+        is_initiator=True,
     )
     opponent_bet = Bet(
         room_id=room.id,
@@ -82,6 +83,7 @@ def place_bet(
         bettor=opponent.name,
         selected_team=opposing_team,
         amount=payload.amount,
+        is_initiator=False,
     )
 
     db.add(your_bet)
