@@ -15,6 +15,7 @@ from app.schemas.common import (
     TokenResponse,
     RoomRead,
     JoinPayload,
+    DisplayNameUpdate,
 )
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -104,12 +105,30 @@ def me(user: User = Depends(get_current_user)):
 
 @router.get("/me/rooms")
 def my_rooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    parts = db.query(Participant).filter(Participant.user_id == user.id).all()
+    parts = (
+        db.query(Participant)
+        .filter(Participant.user_id == user.id, Participant.active == True)
+        .all()
+    )
     rooms = []
     for p in parts:
         r = db.query(Room).get(p.room_id)
-        if r:
-            rooms.append(r)
+        if r is None:
+            continue
+        earliest = (
+            db.query(Participant)
+            .filter(Participant.room_id == r.id)
+            .order_by(Participant.joined_at.asc())
+            .first()
+        )
+        r.is_host = earliest is not None and earliest.user_id == user.id
+
+        all_participants = (
+            db.query(Participant).filter(Participant.room_id == r.id).all()
+        )
+        r.participants = all_participants
+
+        rooms.append(r)
     return rooms
 
 
@@ -219,3 +238,33 @@ def leave_room_for_user(
     participants = db.query(Participant).filter(Participant.room_id == room.id).all()
     room.participants = participants
     return room
+
+
+@router.patch("/me", response_model=UserRead)
+def update_display_name(
+    payload: DisplayNameUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    new_name = payload.display_name.strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Display name cannot be empty")
+    if len(new_name) > 100:
+        raise HTTPException(status_code=400, detail="Display name too long")
+
+    user.display_name = new_name
+    db.add(user)
+
+    # propagate to any active participant rows so future bets use the new name
+    active_participants = (
+        db.query(Participant)
+        .filter(Participant.user_id == user.id, Participant.active == True)
+        .all()
+    )
+    for participant in active_participants:
+        participant.name = new_name
+        db.add(participant)
+
+    db.commit()
+    db.refresh(user)
+    return user

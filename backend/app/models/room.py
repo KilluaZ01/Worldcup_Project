@@ -13,6 +13,7 @@ class Room(Base):
     code: Mapped[str] = mapped_column(
         String(32), unique=True, index=True, nullable=False
     )
+    name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     capacity: Mapped[int] = mapped_column("capacity", nullable=False, default=2)
     occupants: Mapped[int] = mapped_column("occupants", nullable=False, default=0)
     locked: Mapped[bool] = mapped_column(

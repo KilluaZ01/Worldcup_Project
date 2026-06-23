@@ -9,6 +9,7 @@ class ORMModel(BaseModel):
 
 class RoomBase(BaseModel):
     code: str
+    name: str | None = None
 
 
 class RoomCreate(RoomBase):
@@ -17,12 +18,12 @@ class RoomCreate(RoomBase):
 
 class HostPayload(BaseModel):
     code: str
-    host_name: str
+    host_name: str | None = None
 
 
 class JoinPayload(BaseModel):
     code: str
-    name: str
+    name: str | None = None
 
 
 class ParticipantRead(ORMModel):
@@ -58,3 +59,12 @@ class RoomRead(ORMModel, RoomBase):
     locked: bool = False
     participants: list[ParticipantRead] | None = None
     created_at: datetime
+    is_host: bool | None = None
+
+
+class DisplayNameUpdate(BaseModel):
+    display_name: str
+
+
+class RoomNameUpdate(BaseModel):
+    name: str
