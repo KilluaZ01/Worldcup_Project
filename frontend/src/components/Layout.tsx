@@ -1,8 +1,9 @@
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
+import { FaRegCopy } from "react-icons/fa";
 
 const links = [
   { to: "", label: "Dashboard" },
-  { to: "/bet-feed", label: "Place Bets" },
+  { to: "/bet-feed", label: "Bets" },
   { to: "/history", label: "History" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/stats", label: "Statistics" },
@@ -25,17 +26,24 @@ export function Layout() {
     <div className="min-h-screen text-slate-50">
       <header className="border-b border-white/10 bg-slate-950/60 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <NavLink to={home}>
-            <div className="cursor-pointer">
+          <div className="cursor-pointer">
+            <NavLink to={home}>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
                 Private tracker
               </p>
               <h1 className="text-xl font-semibold ">Bet Tracker</h1>
-              <p className="mt-1 text-xs text-slate-400">
-                Room: {roomId.toUpperCase()}
-              </p>
-            </div>
-          </NavLink>
+            </NavLink>
+            <p
+              onClick={() =>
+                navigator.clipboard.writeText(roomId.toUpperCase())
+              }
+              className="mt-1 text-xs text-slate-400 flex items-center gap-2 cursor-pointer"
+            >
+              <span>Room: {roomId.toUpperCase()}</span>
+              <FaRegCopy />
+            </p>
+          </div>
+
           <div className="flex items-center gap-3">
             <nav className="flex gap-2 rounded-full bg-white/5 p-1">
               {links.map((link) => (

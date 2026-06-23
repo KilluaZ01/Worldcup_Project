@@ -5,6 +5,7 @@ import { MatchCard } from "../components/MatchCard";
 import { SectionTitle } from "../components/SectionTitle";
 import { fetchMatches } from "../lib/api";
 import type { Match } from "../types";
+import { FaArrowRight } from "react-icons/fa6";
 
 export function RoomDashboardPage() {
   const { roomId = "" } = useParams<{ roomId: string }>();
@@ -51,9 +52,10 @@ export function RoomDashboardPage() {
         </div>
         <Link
           to={`/room/${roomId}/bet-feed`}
-          className="mt-6 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-500"
+          className="mt-6 inline-flex items-center justify-center gap-3 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-500"
         >
-          Go to Bet Feed →
+          Go to Bet Feed
+          <FaArrowRight />
         </Link>
       </div>
 
