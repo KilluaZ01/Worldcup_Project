@@ -9,6 +9,7 @@ import {
 
 import type {
   Bet,
+  BetHistoryItem,
   LeaderboardEntry,
   Match,
   Result,
@@ -188,7 +189,7 @@ export async function placeBet(payload: {
 
 export async function fetchBetHistory(
   roomId: number,
-): Promise<{ match: Match; result?: Result; bets: Bet[] }[]> {
+): Promise<{ match: Match; result?: Result; bets: BetHistoryItem[] }[]> {
   if (!apiBaseURL) {
     return mockMatches
       .filter((match) => match.status === "finished")
@@ -201,7 +202,7 @@ export async function fetchBetHistory(
 
   const [matchesResponse, betsResponse] = await Promise.all([
     api.get<Match[]>("/matches"),
-    api.get<Bet[]>("/bets/history", { params: { room_id: roomId } }),
+    api.get<BetHistoryItem[]>("/bets/history", { params: { room_id: roomId } }),
   ]);
   return matchesResponse.data
     .filter((match) => match.status === "finished")
