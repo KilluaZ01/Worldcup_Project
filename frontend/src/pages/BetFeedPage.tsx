@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchMatches, fetchBets, getRoom, getStoredUser } from "../lib/api";
+import { fetchMatches, fetchBets, getStoredUser } from "../lib/api";
 import { getTeamFlag } from "../lib/teamFlags";
 import { BetPlacementModal } from "../components/BetPlacementModal";
+import { useRoom } from "../context/RoomContext";
 import type { Bet, Match } from "../types";
 
 function formatDateTime(value: string) {
@@ -20,12 +21,13 @@ export function BetFeedPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const todayMarkerRef = useRef<HTMLDivElement>(null);
 
-  const room = getRoom();
+  const { room } = useRoom();
   const currentUser = getStoredUser();
   const currentUserName: string | null = currentUser?.display_name ?? null;
 
   async function loadData() {
-    const [m, b] = await Promise.all([fetchMatches(), fetchBets()]);
+    if (!room) return;
+    const [m, b] = await Promise.all([fetchMatches(), fetchBets(room.id)]);
     setMatches(m);
     setBets(b);
   }

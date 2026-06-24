@@ -3,17 +3,19 @@ import { ProgressBar } from "../components/ProgressBar";
 import { SectionTitle } from "../components/SectionTitle";
 import { fetchLeaderboard } from "../lib/api";
 import { getBettorTheme } from "../lib/bettorTheme";
+import { useRoom } from "../context/RoomContext";
 import type { LeaderboardEntry } from "../types";
 
 export function LeaderboardPage() {
+  const { room } = useRoom();
   const [leaderboard, setLeaderboard] = useState<Record<
     string,
     LeaderboardEntry
   > | null>(null);
 
   useEffect(() => {
-    void fetchLeaderboard().then(setLeaderboard);
-  }, []);
+    if (room) void fetchLeaderboard(room.id).then(setLeaderboard);
+  }, [room]);
 
   if (!leaderboard) return null;
 

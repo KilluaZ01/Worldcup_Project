@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { SectionTitle } from "../components/SectionTitle";
 import { fetchBetHistory } from "../lib/api";
 import { getBettorTheme } from "../lib/bettorTheme";
+import { useRoom } from "../context/RoomContext";
 import type { Bet, Match, Result } from "../types";
 
 type HistoryRow = {
@@ -11,11 +12,12 @@ type HistoryRow = {
 };
 
 export function HistoryPage() {
+  const { room } = useRoom();
   const [rows, setRows] = useState<HistoryRow[]>([]);
 
   useEffect(() => {
-    void fetchBetHistory().then(setRows);
-  }, []);
+    if (room) void fetchBetHistory(room.id).then(setRows);
+  }, [room]);
 
   return (
     <div>

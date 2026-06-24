@@ -165,12 +165,11 @@ export async function fetchMatches(): Promise<Match[]> {
   return data;
 }
 
-export async function fetchBets(): Promise<Bet[]> {
-  const stored = getStoredRoom();
+export async function fetchBets(roomId: number): Promise<Bet[]> {
   if (!apiBaseURL) return mockBets;
-  const params: Record<string, unknown> = {};
-  if (stored?.id) params.room_id = stored.id;
-  const { data } = await api.get<Bet[]>("/bets", { params });
+  const { data } = await api.get<Bet[]>("/bets", {
+    params: { room_id: roomId },
+  });
   return data;
 }
 
@@ -187,10 +186,9 @@ export async function placeBet(payload: {
   return data;
 }
 
-export async function fetchBetHistory(): Promise<
-  { match: Match; result?: Result; bets: Bet[] }[]
-> {
-  const stored = getStoredRoom();
+export async function fetchBetHistory(
+  roomId: number,
+): Promise<{ match: Match; result?: Result; bets: Bet[] }[]> {
   if (!apiBaseURL) {
     return mockMatches
       .filter((match) => match.status === "finished")
@@ -201,11 +199,9 @@ export async function fetchBetHistory(): Promise<
       }));
   }
 
-  const params: Record<string, unknown> = {};
-  if (stored?.id) params.room_id = stored.id;
   const [matchesResponse, betsResponse] = await Promise.all([
-    api.get<Match[]>("/matches", { params }),
-    api.get<Bet[]>("/bets/history", { params }),
+    api.get<Match[]>("/matches"),
+    api.get<Bet[]>("/bets/history", { params: { room_id: roomId } }),
   ]);
   return matchesResponse.data
     .filter((match) => match.status === "finished")
@@ -215,26 +211,26 @@ export async function fetchBetHistory(): Promise<
     }));
 }
 
-export async function fetchLeaderboard(): Promise<
-  Record<string, LeaderboardEntry>
-> {
-  const stored = getStoredRoom();
+export async function fetchLeaderboard(
+  roomId: number,
+): Promise<Record<string, LeaderboardEntry>> {
   if (!apiBaseURL) return mockLeaderboard;
-  const params: Record<string, unknown> = {};
-  if (stored?.id) params.room_id = stored.id;
+
   const { data } = await api.get<Record<string, LeaderboardEntry>>(
     "/leaderboard",
-    { params },
+    {
+      params: { room_id: roomId },
+    },
   );
+
   return data;
 }
 
-export async function fetchStats(): Promise<Stats> {
-  const stored = getStoredRoom();
+export async function fetchStats(roomId: number): Promise<Stats> {
   if (!apiBaseURL) return mockStats;
-  const params: Record<string, unknown> = {};
-  if (stored?.id) params.room_id = stored.id;
-  const { data } = await api.get<Stats>("/stats", { params });
+  const { data } = await api.get<Stats>("/stats", {
+    params: { room_id: roomId },
+  });
   return data;
 }
 

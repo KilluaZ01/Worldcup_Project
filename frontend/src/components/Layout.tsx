@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import { FaRegCopy } from "react-icons/fa";
 import { UserMenu } from "./UserMenu";
+import { RoomProvider, useRoom } from "../context/RoomContext";
 
 const links = [
   { to: "", label: "Dashboard" },
@@ -10,10 +11,30 @@ const links = [
   { to: "/stats", label: "Statistics" },
 ];
 
-export function Layout() {
+function LayoutInner() {
   const { roomId = "" } = useParams<{ roomId: string }>();
+  const { room, loading, error } = useRoom();
   const roomBase = `/room/${roomId}`;
   const home = `/dashboard`;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-400">
+        Loading room...
+      </div>
+    );
+  }
+
+  if (error || !room) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-slate-400">
+        <p>{error ?? "Room not found"}</p>
+        <NavLink to="/dashboard" className="text-blue-400 hover:underline">
+          Back to dashboard
+        </NavLink>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-slate-50">
@@ -24,15 +45,17 @@ export function Layout() {
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
                 Private tracker
               </p>
-              <h1 className="text-xl font-semibold ">Bet Tracker</h1>
+              <h1 className="text-xl font-semibold">
+                {room.name ?? "Bet Tracker"}
+              </h1>
             </NavLink>
             <p
               onClick={() =>
-                navigator.clipboard.writeText(roomId.toUpperCase())
+                navigator.clipboard.writeText(room.code.toUpperCase())
               }
               className="mt-1 text-xs text-slate-400 flex items-center gap-2 cursor-pointer"
             >
-              <span>Room: {roomId.toUpperCase()}</span>
+              <span>Room: {room.code.toUpperCase()}</span>
               <FaRegCopy />
             </p>
           </div>
@@ -65,5 +88,13 @@ export function Layout() {
         <Outlet />
       </main>
     </div>
+  );
+}
+
+export function Layout() {
+  return (
+    <RoomProvider>
+      <LayoutInner />
+    </RoomProvider>
   );
 }
