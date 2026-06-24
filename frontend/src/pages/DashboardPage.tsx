@@ -9,7 +9,7 @@ import {
 import { UserMenu } from "../components/UserMenu";
 import { ConfirmActionModal } from "../components/ConfirmActionModal";
 import { EditableText } from "../components/EditableText";
-import { updateDisplayName, renameRoom } from "../lib/api";
+import { renameRoom } from "../lib/api";
 
 import type { Room } from "../types";
 
