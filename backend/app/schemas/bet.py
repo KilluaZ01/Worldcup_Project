@@ -33,3 +33,7 @@ class PlaceBetRequest(BaseModel):
 class PlaceBetResponse(BaseModel):
     your_bet: BetRead
     opponent_bet: BetRead
+
+
+class BetHistoryItem(BetRead):
+    won: bool | None = None

@@ -6,7 +6,8 @@ from app.core.database import get_db
 from app.core.rooms import get_room_or_default
 from app.models.all import Bet, Match, Participant, Room, User
 from app.routers.auth import get_current_user
-from app.schemas.bet import BetRead, PlaceBetRequest, PlaceBetResponse
+from app.services.leaderboard import bet_wins
+from app.schemas.bet import BetHistoryItem, BetRead, PlaceBetRequest, PlaceBetResponse
 
 router = APIRouter(prefix="/bets", tags=["bets"])
 
@@ -110,10 +111,10 @@ def get_bets(
     return bets
 
 
-@router.get("/history", response_model=list[BetRead])
+@router.get("/history", response_model=list[BetHistoryItem])
 def get_bet_history(
     room_id: int | None = Query(default=None), db: Session = Depends(get_db)
-) -> list[Bet]:
+) -> list[BetHistoryItem]:
     room = get_room_or_default(db, room_id)
     bets = (
         db.execute(
@@ -125,4 +126,11 @@ def get_bet_history(
         .scalars()
         .all()
     )
-    return bets
+
+    result = []
+    for bet in bets:
+        match = bet.match
+        item = BetHistoryItem.model_validate(bet)
+        item.won = bet_wins(bet, match)
+        result.append(item)
+    return result
