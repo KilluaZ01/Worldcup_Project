@@ -79,28 +79,3 @@ export interface Room {
 export interface BetHistoryItem extends Bet {
   won?: boolean | null;
 }
-
-export async function fetchBetHistory(roomId: number): Promise
-  { match: Match; result?: Result; bets: BetHistoryItem[] }[]
-> {
-  if (!apiBaseURL) {
-    return mockMatches
-      .filter((match) => match.status === "finished")
-      .map((match) => ({
-        match,
-        result: mockResults.find((result) => result.match_id === match.id),
-        bets: mockBets.filter((bet) => bet.match_id === match.id),
-      }));
-  }
-
-  const [matchesResponse, betsResponse] = await Promise.all([
-    api.get<Match[]>("/matches"),
-    api.get<BetHistoryItem[]>("/bets/history", { params: { room_id: roomId } }),
-  ]);
-  return matchesResponse.data
-    .filter((match) => match.status === "finished")
-    .map((match) => ({
-      match,
-      bets: betsResponse.data.filter((bet) => bet.match_id === match.id),
-    }));
-}
