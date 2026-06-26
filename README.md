@@ -1,4 +1,4 @@
-# WorldCupBet
+# Automated Sports Data Pipeline & Prediction Engine
  
 A private, room-based prediction and scoring platform for World Cup 2026 matches, with an automated data pipeline that syncs live tournament results and a custom rules engine for outcome resolution.
  
