@@ -68,7 +68,7 @@ export function RoomDashboardPage() {
         </div>
 
         {/* Right Side (1/3 width) */}
-        <div className="lg:col-span-1 rounded-3xl border border-white/10 bg-slate-800/70 p-6 shadow-glow">
+        <div className="lg:col-span-1 rounded-3xl  bg-slate-800/70 shadow-glow">
           <GroupStandingsTable />
         </div>
       </div>
