@@ -132,7 +132,7 @@ python -m scripts.sync_worldcup
  
 ## Live demo
  
-[your-deployed-url.vercel.app](https://your-deployed-url.vercel.app)
+[worldcup-project-psi.vercel.app](https://worldcup-project-psi.vercel.app/)
  
 ---
  
