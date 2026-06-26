@@ -258,3 +258,23 @@ export async function renameRoom(roomId: number, name: string) {
   const { data } = await api.patch(`/rooms/${roomId}`, { name });
   return data;
 }
+
+export interface GroupStanding {
+  team: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  goal_diff: number;
+  points: number;
+}
+
+export async function fetchStandings(): Promise<
+  Record<string, GroupStanding[]>
+> {
+  const { data } =
+    await api.get<Record<string, GroupStanding[]>>("/matches/standings");
+  return data;
+}
