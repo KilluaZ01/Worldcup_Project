@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.core.database import get_db
 from app.models.all import Match
 from app.schemas.match import MatchRead
+from app.services.standings import calculate_standings
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 
@@ -13,6 +14,11 @@ router = APIRouter(prefix="/matches", tags=["matches"])
 def get_matches(db: Session = Depends(get_db)) -> list[Match]:
     matches = db.execute(select(Match).order_by(Match.start_time.asc())).scalars().all()
     return matches
+
+
+@router.get("/standings")
+def get_standings(db: Session = Depends(get_db)) -> dict[str, list[dict]]:
+    return calculate_standings(db)
 
 
 @router.get("/{match_id}", response_model=MatchRead)

@@ -30,6 +30,7 @@ async def sync_matches() -> None:
                     home_team=fixture["home_team"],
                     away_team=fixture["away_team"],
                     competition=fixture["competition"],
+                    group=fixture.get("group"),
                     venue=fixture["venue"],
                     start_time=fixture["start_time"],
                     status=fixture["status"],
@@ -41,19 +42,28 @@ async def sync_matches() -> None:
                 inserted += 1
                 continue
 
+            changed = False
+
+            # backfill group if missing
+            if existing.group is None and fixture.get("group"):
+                existing.group = fixture["group"]
+                changed = True
+
+            # update if newly finished
             if existing.status == "scheduled" and fixture["status"] == "finished":
                 existing.status = "finished"
                 existing.home_score = fixture["home_score"]
                 existing.away_score = fixture["away_score"]
                 existing.winner = fixture["winner"]
+                changed = True
+
+            if changed:
                 updated += 1
             else:
                 unchanged += 1
 
         db.commit()
-        print(
-            f"Inserted: {inserted} | Updated (newly finished): {updated} | Unchanged: {unchanged}"
-        )
+        print(f"Inserted: {inserted} | Updated: {updated} | Unchanged: {unchanged}")
 
     except Exception as e:
         db.rollback()

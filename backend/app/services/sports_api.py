@@ -79,6 +79,7 @@ class SportsAPIClient:
                     "home_team": team1,
                     "away_team": team2,
                     "competition": f"World Cup 2026 — {item.get('group', round_name)}",
+                    "group": item.get("group"),
                     "venue": item.get("ground", ""),
                     "start_time": parse_kickoff(
                         date_str, item.get("time", "00:00 UTC+0")
