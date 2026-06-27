@@ -177,7 +177,8 @@ export async function fetchBets(roomId: number): Promise<Bet[]> {
 export async function placeBet(payload: {
   match_id: number;
   selected_team: string;
-  amount: number;
+  my_amount: number;
+  opponent_amount: number;
   room_id: number;
 }): Promise<{ your_bet: Bet; opponent_bet: Bet }> {
   const { data } = await api.post<{ your_bet: Bet; opponent_bet: Bet }>(
@@ -277,4 +278,22 @@ export async function fetchStandings(): Promise<
   const { data } =
     await api.get<Record<string, GroupStanding[]>>("/matches/standings");
   return data;
+}
+
+export async function updateBetAmounts(
+  matchId: number,
+  payload: { room_id: number; my_amount: number; opponent_amount: number },
+): Promise<{ your_bet: Bet; opponent_bet: Bet }> {
+  const { data } = await api.patch<{ your_bet: Bet; opponent_bet: Bet }>(
+    `/bets/${matchId}`,
+    payload,
+  );
+  return data;
+}
+
+export async function deleteBet(
+  matchId: number,
+  roomId: number,
+): Promise<void> {
+  await api.delete(`/bets/${matchId}`, { params: { room_id: roomId } });
 }
