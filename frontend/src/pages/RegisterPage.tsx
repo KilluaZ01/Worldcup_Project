@@ -30,7 +30,7 @@ export function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-800/80 p-6 shadow-glow">
+      <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-800/80 p-6 shadow-glow">
         <h1 className="text-2xl font-semibold">Create account</h1>
         <p className="mt-2 text-sm text-slate-400">
           Create an account to save rooms and bets
