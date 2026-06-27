@@ -23,10 +23,15 @@ class BetRead(BetBase):
     created_at: datetime
 
 
+class BetHistoryItem(BetRead):
+    won: bool | None = None
+
+
 class PlaceBetRequest(BaseModel):
     match_id: int
     selected_team: str
-    amount: float = 50
+    my_amount: float = 50
+    opponent_amount: float = 50
     room_id: int
 
 
@@ -35,5 +40,7 @@ class PlaceBetResponse(BaseModel):
     opponent_bet: BetRead
 
 
-class BetHistoryItem(BetRead):
-    won: bool | None = None
+class UpdateBetAmountsRequest(BaseModel):
+    room_id: int
+    my_amount: float
+    opponent_amount: float
